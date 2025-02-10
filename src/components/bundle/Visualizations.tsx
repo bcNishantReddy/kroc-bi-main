@@ -3,11 +3,8 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  ChartContainer,
-  ChartTooltip,
-} from "@/components/ui/chart";
-import { Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import Plot from 'react-plotly.js';
+import { Download, Settings2 } from "lucide-react";
 
 type Bundle = {
   id: string;
@@ -17,31 +14,74 @@ type Bundle = {
   summary_stats: Record<string, any>;
 };
 
-type ChartType = "line" | "bar";
+type ChartType = "line" | "bar" | "scatter" | "pie" | "box" | "histogram";
 
 const Visualizations = ({ bundle }: { bundle: Bundle }) => {
   const [chartType, setChartType] = useState<ChartType>("line");
   const [xAxis, setXAxis] = useState<string>("");
   const [yAxis, setYAxis] = useState<string>("");
+  const [groupBy, setGroupBy] = useState<string>("");
 
   const columnNames = Object.keys(bundle.raw_data[0] || {});
 
   const downloadChart = () => {
-    // Implementation for chart download
-    console.log("Download chart functionality to be implemented");
-  };
-
-  const chartConfig = {
-    [yAxis]: {
-      label: yAxis,
-      color: "#8884d8"
+    const plotElement = document.querySelector('.js-plotly-plot');
+    if (plotElement) {
+      // @ts-ignore - Plotly types are not complete
+      Plotly.downloadImage(plotElement, {
+        format: 'png',
+        height: 800,
+        width: 1200,
+        filename: `${bundle.name}-chart`,
+      });
     }
   };
 
+  const getPlotData = () => {
+    if (!xAxis || !yAxis) return [];
+
+    let plotData: any = {
+      x: bundle.raw_data.map(item => item[xAxis]),
+      y: bundle.raw_data.map(item => item[yAxis]),
+      type: chartType,
+      mode: chartType === 'scatter' ? 'markers' : undefined,
+      marker: { color: '#8884d8' },
+      name: yAxis,
+    };
+
+    if (groupBy) {
+      const groups = [...new Set(bundle.raw_data.map(item => item[groupBy]))];
+      return groups.map(group => ({
+        ...plotData,
+        x: bundle.raw_data.filter(item => item[groupBy] === group).map(item => item[xAxis]),
+        y: bundle.raw_data.filter(item => item[groupBy] === group).map(item => item[yAxis]),
+        name: `${group}`,
+      }));
+    }
+
+    return [plotData];
+  };
+
+  const layout = {
+    autosize: true,
+    title: `${yAxis} vs ${xAxis}`,
+    xaxis: { title: xAxis },
+    yaxis: { title: yAxis },
+    hovermode: 'closest',
+    margin: { l: 50, r: 50, b: 50, t: 50 },
+  };
+
+  const config = {
+    responsive: true,
+    displayModeBar: true,
+    displaylogo: false,
+    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
       <Card className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium mb-2">Chart Type</label>
             <Select value={chartType} onValueChange={(value: ChartType) => setChartType(value)}>
@@ -51,6 +91,10 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
               <SelectContent>
                 <SelectItem value="line">Line Chart</SelectItem>
                 <SelectItem value="bar">Bar Chart</SelectItem>
+                <SelectItem value="scatter">Scatter Plot</SelectItem>
+                <SelectItem value="pie">Pie Chart</SelectItem>
+                <SelectItem value="box">Box Plot</SelectItem>
+                <SelectItem value="histogram">Histogram</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -87,44 +131,50 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
             </Select>
           </div>
           
-          <div className="flex items-end">
-            <Button onClick={downloadChart} className="w-full">
-              Download Chart
-            </Button>
+          <div>
+            <label className="block text-sm font-medium mb-2">Group By (Optional)</label>
+            <Select value={groupBy} onValueChange={setGroupBy}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select grouping" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">None</SelectItem>
+                {columnNames.map((name) => (
+                  <SelectItem key={name} value={name}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        <div className="h-[400px] w-full">
+        <div className="flex justify-end space-x-2 mb-4">
+          <Button 
+            variant="outline" 
+            onClick={downloadChart}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Download
+          </Button>
+          <Button 
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Settings2 className="h-4 w-4" />
+            Advanced Options
+          </Button>
+        </div>
+
+        <div className="h-[600px] w-full">
           {xAxis && yAxis && (
-            <ChartContainer config={chartConfig}>
-              {chartType === "line" ? (
-                <Line
-                  data={bundle.raw_data}
-                  dataKey={yAxis}
-                  stroke="#8884d8"
-                  name={yAxis}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={xAxis} />
-                  <YAxis />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend />
-                </Line>
-              ) : (
-                <Bar
-                  data={bundle.raw_data}
-                  dataKey={yAxis}
-                  fill="#8884d8"
-                  name={yAxis}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={xAxis} />
-                  <YAxis />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend />
-                </Bar>
-              )}
-            </ChartContainer>
+            <Plot
+              data={getPlotData()}
+              layout={layout}
+              config={config}
+              className="w-full h-full"
+            />
           )}
         </div>
       </Card>
@@ -133,3 +183,4 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
 };
 
 export default Visualizations;
+
