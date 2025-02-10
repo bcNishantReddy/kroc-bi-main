@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { Routes, Route, Navigate, Link } from "react-router-dom";
+import { Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -18,10 +19,10 @@ import {
   MessageSquare, 
   Plus,
   Search,
-  Upload
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
+import BundleView from "./BundleView";
 
 type Bundle = {
   id: string;
@@ -37,6 +38,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const loadBundles = async () => {
     try {
@@ -199,6 +201,7 @@ const Dashboard = () => {
               {filteredBundles.map((bundle) => (
                 <button
                   key={bundle.id}
+                  onClick={() => navigate(`/dashboard/bundle/${bundle.id}`)}
                   className={cn(
                     "w-full text-left p-3 rounded-lg hover:bg-accent",
                     "transition-colors duration-200"
@@ -253,15 +256,14 @@ const Dashboard = () => {
                     <MessageSquare className="h-8 w-8 mb-2" />
                     <h2 className="text-lg font-semibold">AI Chat</h2>
                     <p className="text-muted-foreground">
-                      Get insights from Gemini AI
+                      Get insights from AI
                     </p>
                   </div>
                 </div>
               </div>
             }
           />
-          <Route path="visualizations" element={<div>Visualizations</div>} />
-          <Route path="chat" element={<div>AI Chat</div>} />
+          <Route path="bundle/:bundleId/*" element={<BundleView />} />
         </Routes>
       </div>
     </div>
