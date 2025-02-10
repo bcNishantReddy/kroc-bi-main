@@ -14,7 +14,37 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const validateInputs = () => {
+    if (!email.trim() || !password.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter both email and password",
+      });
+      return false;
+    }
+    if (!email.includes("@")) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a valid email address",
+      });
+      return false;
+    }
+    if (password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleAuth = async (type: "signin" | "signup") => {
+    if (!validateInputs()) return;
+
     try {
       setLoading(true);
       const {
@@ -22,12 +52,15 @@ const Auth = () => {
         error,
       } = type === "signup"
         ? await supabase.auth.signUp({
-            email,
-            password,
+            email: email.trim(),
+            password: password.trim(),
+            options: {
+              emailRedirectTo: window.location.origin,
+            },
           })
         : await supabase.auth.signInWithPassword({
-            email,
-            password,
+            email: email.trim(),
+            password: password.trim(),
           });
 
       if (error) {
