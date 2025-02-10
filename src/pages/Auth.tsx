@@ -89,11 +89,11 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 p-6 sm:p-8 bg-white rounded-lg shadow-lg">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Kroc-BI</h1>
-          <p className="mt-2 text-gray-600">Sign in or create an account</p>
+          <h1 className="text-3xl font-bold text-gray-900">Kroc-BI</h1>
+          <p className="mt-2 text-sm text-gray-600">Sign in or create an account</p>
         </div>
         <div className="mt-8 space-y-6">
           <div className="space-y-4">
@@ -102,24 +102,26 @@ const Auth = () => {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
             />
             <Input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
             />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Button
-              className="w-full"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               onClick={() => handleAuth("signin")}
               disabled={loading}
             >
               {loading ? <Loader2 className="animate-spin" /> : "Sign In"}
             </Button>
             <Button
-              className="w-full"
+              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               variant="outline"
               onClick={() => handleAuth("signup")}
               disabled={loading}

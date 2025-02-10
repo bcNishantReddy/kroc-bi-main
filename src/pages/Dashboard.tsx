@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -65,6 +64,15 @@ const Dashboard = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (!file.name.endsWith('.csv')) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please upload a CSV file only",
+        });
+        event.target.value = ''; // Reset the input
+        return;
+      }
       setFileData(file);
     }
   };
@@ -74,7 +82,7 @@ const Dashboard = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please provide both a name and a file",
+        description: "Please provide both a name and a CSV file",
       });
       return;
     }
@@ -82,12 +90,21 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const fileContent = await fileData.text();
-      const parsedData = JSON.parse(fileContent);
+      const lines = fileContent.split('\n');
+      const headers = lines[0].split(',');
+      const data = lines.slice(1).map(line => {
+        const values = line.split(',');
+        const row: Record<string, string> = {};
+        headers.forEach((header, index) => {
+          row[header.trim()] = values[index]?.trim() || '';
+        });
+        return row;
+      });
 
       const { error } = await supabase.from("bundles").insert({
         name: newBundleName,
         user_id: user?.id,
-        raw_data: parsedData,
+        raw_data: data,
         columns_info: {},
         summary_stats: {},
       });
@@ -120,7 +137,6 @@ const Dashboard = () => {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
       <div className="w-64 bg-accent/20 p-4 flex flex-col">
         <div className="mb-6">
           <Link to="/" className="flex items-center mb-8 text-xl font-bold">
@@ -146,7 +162,7 @@ const Dashboard = () => {
                 <Input
                   type="file"
                   onChange={handleFileUpload}
-                  accept=".json"
+                  accept=".csv"
                 />
                 <Button 
                   onClick={createBundle} 
@@ -210,7 +226,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto">
         <Routes>
           <Route index element={<Navigate to="overview" replace />} />
