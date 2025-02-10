@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Routes, Route, useParams, useNavigate } from "react-router-dom";
+import { Routes, Route, useParams, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,14 @@ const BundleView = () => {
           .single();
 
         if (error) throw error;
-        setBundle(data);
+        
+        // Ensure raw_data is parsed as an array
+        const parsedData = {
+          ...data,
+          raw_data: Array.isArray(data.raw_data) ? data.raw_data : [],
+        };
+
+        setBundle(parsedData as Bundle);
       } catch (error) {
         console.error("Error loading bundle:", error);
         toast({

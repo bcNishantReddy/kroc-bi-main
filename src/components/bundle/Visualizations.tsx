@@ -31,6 +31,13 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
     console.log("Download chart functionality to be implemented");
   };
 
+  const chartConfig = {
+    [yAxis]: {
+      label: yAxis,
+      color: "#8884d8"
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -89,7 +96,7 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
 
         <div className="h-[400px] w-full">
           {xAxis && yAxis && (
-            <ChartContainer>
+            <ChartContainer config={chartConfig}>
               {chartType === "line" ? (
                 <Line
                   data={bundle.raw_data}
