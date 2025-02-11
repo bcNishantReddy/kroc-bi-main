@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Routes, Route, useParams, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataSummary from "@/components/bundle/DataSummary";
 import Visualizations from "@/components/bundle/Visualizations";
 import AIChat from "@/components/bundle/AIChat";
+import AIDataInsights from "@/components/bundle/AIDataInsights";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -100,7 +100,7 @@ const BundleView = () => {
       </div>
 
       <Tabs defaultValue="summary" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
           <TabsTrigger 
             value="summary" 
             onClick={() => navigate(`/dashboard/bundle/${bundleId}/summary`)}
@@ -112,6 +112,12 @@ const BundleView = () => {
             onClick={() => navigate(`/dashboard/bundle/${bundleId}/visualizations`)}
           >
             Visualizations
+          </TabsTrigger>
+          <TabsTrigger 
+            value="insights"
+            onClick={() => navigate(`/dashboard/bundle/${bundleId}/insights`)}
+          >
+            AI Insights
           </TabsTrigger>
           <TabsTrigger 
             value="chat"
@@ -133,6 +139,10 @@ const BundleView = () => {
           <Route
             path="visualizations"
             element={<Visualizations bundle={bundle} />}
+          />
+          <Route
+            path="insights"
+            element={<AIDataInsights bundle={bundle} />}
           />
           <Route
             path="chat"

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,6 +21,8 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
   const [xAxis, setXAxis] = useState<string>("");
   const [yAxis, setYAxis] = useState<string>("");
   const [groupBy, setGroupBy] = useState<string>("");
+  const [plotData, setPlotData] = useState<any[]>([]);
+  const [layout, setLayout] = useState<any>({});
 
   const columnNames = Object.keys(bundle.raw_data[0] || {});
 
@@ -37,10 +39,10 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
     }
   };
 
-  const getPlotData = () => {
-    if (!xAxis || !yAxis) return [];
+  useEffect(() => {
+    if (!xAxis || !yAxis) return;
 
-    let plotData: any = {
+    let newPlotData: any = {
       x: bundle.raw_data.map(item => item[xAxis]),
       y: bundle.raw_data.map(item => item[yAxis]),
       type: chartType,
@@ -51,25 +53,25 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
 
     if (groupBy) {
       const groups = [...new Set(bundle.raw_data.map(item => item[groupBy]))];
-      return groups.map(group => ({
-        ...plotData,
+      newPlotData = groups.map(group => ({
+        ...newPlotData,
         x: bundle.raw_data.filter(item => item[groupBy] === group).map(item => item[xAxis]),
         y: bundle.raw_data.filter(item => item[groupBy] === group).map(item => item[yAxis]),
         name: `${group}`,
       }));
     }
 
-    return [plotData];
-  };
+    setPlotData(Array.isArray(newPlotData) ? newPlotData : [newPlotData]);
 
-  const layout = {
-    autosize: true,
-    title: `${yAxis} vs ${xAxis}`,
-    xaxis: { title: xAxis },
-    yaxis: { title: yAxis },
-    hovermode: 'closest',
-    margin: { l: 50, r: 50, b: 50, t: 50 },
-  };
+    setLayout({
+      autosize: true,
+      title: `${yAxis} vs ${xAxis}`,
+      xaxis: { title: xAxis },
+      yaxis: { title: yAxis },
+      hovermode: 'closest',
+      margin: { l: 50, r: 50, b: 50, t: 50 },
+    });
+  }, [xAxis, yAxis, groupBy, chartType, bundle.raw_data]);
 
   const config = {
     responsive: true,
@@ -170,7 +172,7 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
         <div className="h-[600px] w-full">
           {xAxis && yAxis && (
             <Plot
-              data={getPlotData()}
+              data={plotData}
               layout={layout}
               config={config}
               className="w-full h-full"
@@ -183,4 +185,3 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
 };
 
 export default Visualizations;
-

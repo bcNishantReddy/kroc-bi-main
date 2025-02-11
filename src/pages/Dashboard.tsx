@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -38,6 +37,7 @@ const Dashboard = () => {
   const [newBundleName, setNewBundleName] = useState("");
   const [fileData, setFileData] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -132,6 +132,7 @@ const Dashboard = () => {
       loadBundles();
       setNewBundleName("");
       setFileData(null);
+      setIsDialogOpen(false);
     } catch (error) {
       console.error("Error creating bundle:", error);
       toast({
@@ -182,9 +183,9 @@ const Dashboard = () => {
           Kroc-BI
         </Link>
         
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full">
+            <Button className="w-full" onClick={() => setIsDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" /> New Bundle
             </Button>
           </DialogTrigger>
