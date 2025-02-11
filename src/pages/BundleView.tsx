@@ -8,6 +8,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataSummary from "@/components/bundle/DataSummary";
 import Visualizations from "@/components/bundle/Visualizations";
 import AIChat from "@/components/bundle/AIChat";
+import { ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
 
 type Bundle = {
   id: string;
@@ -60,24 +62,45 @@ const BundleView = () => {
   }, [bundleId, toast]);
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!bundle) {
-    return <div className="p-6">Bundle not found</div>;
+    return (
+      <div className="p-6 text-center">
+        <h2 className="text-2xl font-bold mb-4">Bundle not found</h2>
+        <Button onClick={() => navigate("/dashboard/overview")}>
+          Return to Overview
+        </Button>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-6"
+    >
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{bundle.name}</h1>
-        <Button variant="outline" onClick={() => navigate("/dashboard/overview")}>
-          Back to Overview
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/dashboard/overview")}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">{bundle.name}</h1>
+        </div>
       </div>
 
       <Tabs defaultValue="summary" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
           <TabsTrigger 
             value="summary" 
             onClick={() => navigate(`/dashboard/bundle/${bundleId}/summary`)}
@@ -117,7 +140,7 @@ const BundleView = () => {
           />
         </Routes>
       </Tabs>
-    </div>
+    </motion.div>
   );
 };
 

@@ -19,10 +19,12 @@ import {
   MessageSquare, 
   Plus,
   Search,
+  Menu,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import BundleView from "./BundleView";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 type Bundle = {
   id: string;
@@ -72,7 +74,7 @@ const Dashboard = () => {
           title: "Error",
           description: "Please upload a CSV file only",
         });
-        event.target.value = ''; // Reset the input
+        event.target.value = '';
         return;
       }
       setFileData(file);
@@ -80,6 +82,15 @@ const Dashboard = () => {
   };
 
   const createBundle = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create a bundle",
+      });
+      navigate("/auth");
+      return;
+    }
+
     if (!fileData || !newBundleName.trim()) {
       toast({
         variant: "destructive",
@@ -133,77 +144,106 @@ const Dashboard = () => {
     }
   };
 
+  const deleteBundle = async (bundleId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("bundles")
+        .delete()
+        .eq("id", bundleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Bundle deleted successfully",
+      });
+      
+      loadBundles();
+    } catch (error) {
+      console.error("Error deleting bundle:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete bundle",
+      });
+    }
+  };
+
   const filteredBundles = bundles.filter((bundle) =>
     bundle.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  return (
-    <div className="flex h-screen">
-      <div className="w-64 bg-accent/20 p-4 flex flex-col">
-        <div className="mb-6">
-          <Link to="/" className="flex items-center mb-8 text-xl font-bold">
-            Kroc-BI
-          </Link>
-          
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="w-full">
-                <Plus className="mr-2 h-4 w-4" /> New Bundle
+  const Sidebar = () => (
+    <div className="w-64 bg-accent/20 p-4 flex flex-col h-full">
+      <div className="mb-6">
+        <Link to="/" className="flex items-center mb-8 text-xl font-bold">
+          Kroc-BI
+        </Link>
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="w-full">
+              <Plus className="mr-2 h-4 w-4" /> New Bundle
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Bundle</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <Input
+                placeholder="Bundle Name"
+                value={newBundleName}
+                onChange={(e) => setNewBundleName(e.target.value)}
+              />
+              <Input
+                type="file"
+                onChange={handleFileUpload}
+                accept=".csv"
+              />
+              <Button 
+                onClick={createBundle} 
+                className="w-full"
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Create Bundle"}
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Bundle</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <Input
-                  placeholder="Bundle Name"
-                  value={newBundleName}
-                  onChange={(e) => setNewBundleName(e.target.value)}
-                />
-                <Input
-                  type="file"
-                  onChange={handleFileUpload}
-                  accept=".csv"
-                />
-                <Button 
-                  onClick={createBundle} 
-                  className="w-full"
-                  disabled={loading}
-                >
-                  {loading ? "Creating..." : "Create Bundle"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search bundles..."
-              className="w-full pl-10 pr-4 py-2 rounded-md border bg-background"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto">
-          {filteredBundles.length === 0 ? (
-            <div className="text-center text-muted-foreground p-4">
-              No bundles yet. Create one to get started!
             </div>
-          ) : (
-            <div className="space-y-2">
-              {filteredBundles.map((bundle) => (
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search bundles..."
+            className="w-full pl-10 pr-4 py-2 rounded-md border bg-background"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto">
+        {filteredBundles.length === 0 ? (
+          <div className="text-center text-muted-foreground p-4">
+            No bundles yet. Create one to get started!
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filteredBundles.map((bundle) => (
+              <div
+                key={bundle.id}
+                className="flex items-center justify-between"
+              >
                 <button
-                  key={bundle.id}
                   onClick={() => navigate(`/dashboard/bundle/${bundle.id}`)}
                   className={cn(
-                    "w-full text-left p-3 rounded-lg hover:bg-accent",
+                    "flex-1 text-left p-3 rounded-lg hover:bg-accent",
                     "transition-colors duration-200"
                   )}
                 >
@@ -212,12 +252,23 @@ const Dashboard = () => {
                     {new Date(bundle.created_at).toLocaleDateString()}
                   </div>
                 </button>
-              ))}
-            </div>
-          )}
-        </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                  onClick={() => deleteBundle(bundle.id)}
+                >
+                  <span className="sr-only">Delete bundle</span>
+                  ×
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-        <div className="mt-4 pt-4 border-t">
+      <div className="mt-4 pt-4 border-t">
+        {user ? (
           <Button 
             variant="ghost" 
             className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
@@ -226,7 +277,38 @@ const Dashboard = () => {
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </Button>
-        </div>
+        ) : (
+          <Button
+            variant="default"
+            className="w-full"
+            onClick={() => navigate("/auth")}
+          >
+            Sign In
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen">
+      {/* Mobile sidebar */}
+      <div className="lg:hidden">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="ml-2 mt-2">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0">
+            <Sidebar />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar />
       </div>
 
       <div className="flex-1 overflow-auto">

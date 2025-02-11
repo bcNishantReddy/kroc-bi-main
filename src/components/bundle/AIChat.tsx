@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Bundle = {
   id: string;
@@ -77,6 +78,10 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -99,30 +104,45 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
     <Card className="flex flex-col h-[calc(100vh-250px)] bg-background">
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4" ref={scrollRef}>
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-              <MessageCircle className="h-12 w-12 mb-4" />
-              <p className="text-lg font-medium">Start a conversation about your data</p>
-              <p className="text-sm">Ask questions about trends, patterns, or specific data points</p>
-            </div>
-          ) : (
-            messages.map((message, index) => (
-              <div 
-                key={message.id} 
-                className="space-y-2"
-                ref={index === messages.length - 1 ? lastMessageRef : null}
+          <AnimatePresence>
+            {messages.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="flex flex-col items-center justify-center h-full text-muted-foreground"
               >
-                <div className="bg-accent/20 rounded-lg p-3 animate-fade-in">
-                  <p className="whitespace-pre-wrap">{message.message}</p>
-                </div>
-                {message.response && (
-                  <div className="bg-primary/10 rounded-lg p-3 ml-4 animate-slide-in-right">
-                    <p className="whitespace-pre-wrap">{message.response}</p>
+                <MessageCircle className="h-12 w-12 mb-4" />
+                <p className="text-lg font-medium">Start a conversation about your data</p>
+                <p className="text-sm">Ask questions about trends, patterns, or specific data points</p>
+              </motion.div>
+            ) : (
+              messages.map((message, index) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-2"
+                  ref={index === messages.length - 1 ? lastMessageRef : null}
+                >
+                  <div className="bg-accent/20 rounded-lg p-3">
+                    <p className="whitespace-pre-wrap">{message.message}</p>
                   </div>
-                )}
-              </div>
-            ))
-          )}
+                  {message.response && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="bg-primary/10 rounded-lg p-3 ml-4"
+                    >
+                      <p className="whitespace-pre-wrap">{message.response}</p>
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))
+            )}
+          </AnimatePresence>
         </div>
       </ScrollArea>
       
@@ -147,7 +167,10 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
             className="flex items-center gap-2"
           >
             {loading ? (
-              "Sending..."
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Sending...
+              </>
             ) : (
               <>
                 <Send className="h-4 w-4" />
@@ -162,4 +185,3 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
 };
 
 export default AIChat;
-
