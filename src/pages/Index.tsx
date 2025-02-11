@@ -1,11 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { BarChart3, Database, Bot, ArrowRight } from "lucide-react";
+import { BarChart3, Database, Bot, ArrowRight, LogIn } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const features = [
     {
@@ -27,13 +29,26 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="p-4 flex justify-end">
+        {user ? (
+          <Button onClick={() => navigate("/dashboard")}>
+            Go to Dashboard <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
+        ) : (
+          <Button onClick={() => navigate("/auth")}>
+            <LogIn className="mr-2 w-4 h-4" /> Sign In
+          </Button>
+        )}
+      </nav>
+
       {/* Hero Section */}
-      <section className="section-padding flex flex-col items-center justify-center min-h-[80vh] text-center">
+      <section className="section-padding flex flex-col items-center justify-center min-h-[70vh] text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-3xl mx-auto"
+          className="max-w-3xl mx-auto px-4"
         >
           <div className="inline-flex items-center justify-center px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-accent text-accent-foreground">
             🚀 Welcome to the future of data analysis
@@ -44,19 +59,41 @@ const Index = () => {
           <p className="text-lg md:text-xl text-muted-foreground mb-8">
             Transform your data into actionable insights with AI-powered analytics
           </p>
-          <Button
-            size="lg"
-            className="text-lg px-8"
-            onClick={() => navigate("/dashboard")}
-          >
-            Get Started <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <div className="space-x-4">
+            {user ? (
+              <Button
+                size="lg"
+                className="text-lg px-8"
+                onClick={() => navigate("/dashboard")}
+              >
+                Go to Dashboard <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            ) : (
+              <>
+                <Button
+                  size="lg"
+                  className="text-lg px-8"
+                  onClick={() => navigate("/auth")}
+                >
+                  Get Started <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8"
+                  onClick={() => navigate("/auth?mode=signup")}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
+          </div>
         </motion.div>
       </section>
 
       {/* Features Section */}
       <section className="section-padding bg-accent/20">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
             Everything you need for data analysis
           </h2>

@@ -183,9 +183,22 @@ const Dashboard = () => {
           Kroc-BI
         </Link>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog 
+          open={isDialogOpen} 
+          onOpenChange={(open) => {
+            if (!user && open) {
+              toast({
+                title: "Authentication required",
+                description: "Please sign in to create a bundle",
+              });
+              navigate("/auth");
+              return;
+            }
+            setIsDialogOpen(open);
+          }}
+        >
           <DialogTrigger asChild>
-            <Button className="w-full" onClick={() => setIsDialogOpen(true)}>
+            <Button className="w-full">
               <Plus className="mr-2 h-4 w-4" /> New Bundle
             </Button>
           </DialogTrigger>
