@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate(); // Add this line
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
 
