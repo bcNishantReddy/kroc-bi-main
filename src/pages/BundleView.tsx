@@ -64,18 +64,26 @@ const BundleView = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative w-20 h-20">
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute top-2 left-2 w-16 h-16 border-4 border-primary/30 border-t-transparent rounded-full animate-spin-slow"></div>
+          </div>
+          <p className="text-muted-foreground animate-pulse">Loading bundle data...</p>
+        </div>
       </div>
     );
   }
 
   if (!bundle) {
     return (
-      <div className="p-6 text-center">
-        <h2 className="text-2xl font-bold mb-4">Bundle not found</h2>
-        <Button onClick={() => navigate("/dashboard/overview")}>
-          Return to Overview
-        </Button>
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Bundle not found</h2>
+          <Button onClick={() => navigate("/dashboard/overview")}>
+            Return to Overview
+          </Button>
+        </div>
       </div>
     );
   }
@@ -84,72 +92,76 @@ const BundleView = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6"
+      className="min-h-screen"
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/dashboard/overview")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">{bundle.name}</h1>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/dashboard/overview")}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">{bundle.name}</h1>
+          </div>
         </div>
+
+        <Tabs defaultValue="summary" className="h-[calc(100vh-200px)]">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+            <TabsTrigger 
+              value="summary" 
+              onClick={() => navigate(`/dashboard/bundle/${bundleId}/summary`)}
+            >
+              Data Summary
+            </TabsTrigger>
+            <TabsTrigger 
+              value="visualizations"
+              onClick={() => navigate(`/dashboard/bundle/${bundleId}/visualizations`)}
+            >
+              Visualizations
+            </TabsTrigger>
+            <TabsTrigger 
+              value="insights"
+              onClick={() => navigate(`/dashboard/bundle/${bundleId}/insights`)}
+            >
+              AI Insights
+            </TabsTrigger>
+            <TabsTrigger 
+              value="chat"
+              onClick={() => navigate(`/dashboard/bundle/${bundleId}/chat`)}
+            >
+              AI Chat
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="mt-4 h-full">
+            <Routes>
+              <Route
+                index
+                element={<Navigate to="summary" replace />}
+              />
+              <Route
+                path="summary"
+                element={<DataSummary bundle={bundle} />}
+              />
+              <Route
+                path="visualizations"
+                element={<Visualizations bundle={bundle} />}
+              />
+              <Route
+                path="insights"
+                element={<AIDataInsights bundle={bundle} />}
+              />
+              <Route
+                path="chat"
+                element={<AIChat bundle={bundle} />}
+              />
+            </Routes>
+          </div>
+        </Tabs>
       </div>
-
-      <Tabs defaultValue="summary" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
-          <TabsTrigger 
-            value="summary" 
-            onClick={() => navigate(`/dashboard/bundle/${bundleId}/summary`)}
-          >
-            Data Summary
-          </TabsTrigger>
-          <TabsTrigger 
-            value="visualizations"
-            onClick={() => navigate(`/dashboard/bundle/${bundleId}/visualizations`)}
-          >
-            Visualizations
-          </TabsTrigger>
-          <TabsTrigger 
-            value="insights"
-            onClick={() => navigate(`/dashboard/bundle/${bundleId}/insights`)}
-          >
-            AI Insights
-          </TabsTrigger>
-          <TabsTrigger 
-            value="chat"
-            onClick={() => navigate(`/dashboard/bundle/${bundleId}/chat`)}
-          >
-            AI Chat
-          </TabsTrigger>
-        </TabsList>
-
-        <Routes>
-          <Route
-            index
-            element={<Navigate to="summary" replace />}
-          />
-          <Route
-            path="summary"
-            element={<DataSummary bundle={bundle} />}
-          />
-          <Route
-            path="visualizations"
-            element={<Visualizations bundle={bundle} />}
-          />
-          <Route
-            path="insights"
-            element={<AIDataInsights bundle={bundle} />}
-          />
-          <Route
-            path="chat"
-            element={<AIChat bundle={bundle} />}
-          />
-        </Routes>
-      </Tabs>
     </motion.div>
   );
 };

@@ -105,14 +105,20 @@ const Dashboard = () => {
       const fileContent = await fileData.text();
       const lines = fileContent.split('\n');
       const headers = lines[0].split(',');
-      const data = lines.slice(1).map(line => {
-        const values = line.split(',');
-        const row: Record<string, string> = {};
-        headers.forEach((header, index) => {
-          row[header.trim()] = values[index]?.trim() || '';
+      const data = lines.slice(1)
+        .filter(line => line.trim()) // Skip empty lines
+        .map(line => {
+          const values = line.split(',');
+          const row: Record<string, string> = {};
+          headers.forEach((header, index) => {
+            row[header.trim()] = values[index]?.trim() || '';
+          });
+          return row;
         });
-        return row;
-      });
+
+      if (data.length === 0) {
+        throw new Error("No valid data found in CSV file");
+      }
 
       const { error } = await supabase.from("bundles").insert({
         name: newBundleName,
@@ -138,7 +144,7 @@ const Dashboard = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create bundle",
+        description: error.message || "Failed to create bundle",
       });
     } finally {
       setLoading(false);
@@ -202,7 +208,7 @@ const Dashboard = () => {
               <Plus className="mr-2 h-4 w-4" /> New Bundle
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent onPointerDownOutside={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle>Create New Bundle</DialogTitle>
             </DialogHeader>
@@ -222,7 +228,14 @@ const Dashboard = () => {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? "Creating..." : "Create Bundle"}
+                {loading ? (
+                  <div className="flex items-center">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </div>
+                ) : (
+                  "Create Bundle"
+                )}
               </Button>
             </div>
           </DialogContent>
