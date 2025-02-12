@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 
 type Bundle = {
   id: string;
@@ -18,20 +19,67 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
   const [insights, setInsights] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  const loadStoredInsights = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bundle_insights')
+        .select('insight_text')
+        .eq('bundle_id', bundle.id)
+        .eq('insight_type', 'general')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error('Error loading insights:', error);
+        return;
+      }
+
+      if (data) {
+        setInsights(data.insight_text);
+      } else {
+        // If no insights found, generate new ones
+        await generateInsights();
+      }
+    } catch (error) {
+      console.error('Error in loadStoredInsights:', error);
+    }
+  };
 
   const generateInsights = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to generate insights",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('generate-insights', {
+      const { data: aiResponse, error: aiError } = await supabase.functions.invoke('generate-insights', {
         body: {
           data: bundle.raw_data.slice(0, 100),
           columns: Object.keys(bundle.raw_data[0] || {}),
         },
       });
 
-      if (error) throw error;
+      if (aiError) throw aiError;
       
-      setInsights(data.insights);
+      const generatedInsights = aiResponse.insights;
+
+      // Store the insights in the bundle_insights table
+      const { error: insertError } = await supabase.from('bundle_insights').insert({
+        bundle_id: bundle.id,
+        insight_type: 'general',
+        insight_text: generatedInsights,
+      });
+
+      if (insertError) throw insertError;
+      
+      setInsights(generatedInsights);
     } catch (error) {
       console.error('Error generating insights:', error);
       toast({
@@ -45,7 +93,7 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
   };
 
   useEffect(() => {
-    generateInsights();
+    loadStoredInsights();
   }, [bundle.id]);
 
   return (
