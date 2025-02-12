@@ -47,41 +47,73 @@ const Auth = () => {
 
     try {
       setLoading(true);
-      const {
-        data: { user },
-        error,
-      } = type === "signup"
-        ? await supabase.auth.signUp({
-            email: email.trim(),
-            password: password.trim(),
-            options: {
-              emailRedirectTo: window.location.origin,
-            },
-          })
-        : await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password: password.trim(),
-          });
+      console.log(`Attempting ${type} for email:`, email);
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message,
+      if (type === "signup") {
+        const { data: { user }, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password.trim(),
+          options: {
+            emailRedirectTo: window.location.origin,
+          },
         });
-      } else if (user) {
-        toast({
-          title: "Success",
-          description: type === "signup" ? "Account created successfully" : "Logged in successfully",
+
+        if (error) {
+          console.error("Signup error:", error);
+          let errorMessage = error.message;
+          if (error.message.includes("User already registered")) {
+            errorMessage = "This email is already registered. Please sign in instead.";
+          }
+          toast({
+            variant: "destructive",
+            title: "Signup Error",
+            description: errorMessage,
+          });
+          return;
+        }
+
+        if (user) {
+          toast({
+            title: "Success",
+            description: "Account created successfully! Please check your email to verify your account.",
+          });
+          navigate("/dashboard");
+        }
+      } else {
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password.trim(),
         });
-        navigate("/dashboard");
+
+        if (error) {
+          console.error("Sign in error:", error);
+          let errorMessage = error.message;
+          if (error.message.includes("Invalid login credentials")) {
+            errorMessage = "Invalid email or password. Please try again.";
+          }
+          toast({
+            variant: "destructive",
+            title: "Sign In Error",
+            description: errorMessage,
+          });
+          return;
+        }
+
+        if (user) {
+          console.log("Sign in successful for user:", user.id);
+          toast({
+            title: "Success",
+            description: "Logged in successfully",
+          });
+          navigate("/dashboard");
+        }
       }
     } catch (error) {
-      console.error("Auth error:", error);
+      console.error("Authentication error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred. Please try again.",
       });
     } finally {
       setLoading(false);
