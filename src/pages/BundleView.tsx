@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Routes, Route, useParams, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,9 +93,9 @@ const BundleView = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="min-h-screen"
+      className="min-h-screen bg-background"
     >
-      <div className="p-6">
+      <div className="container mx-auto px-4 py-6 max-w-[2000px]">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button
@@ -109,34 +110,38 @@ const BundleView = () => {
         </div>
 
         <Tabs defaultValue="summary" className="h-[calc(100vh-200px)]">
-          <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[600px] mb-6">
             <TabsTrigger 
               value="summary" 
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/summary`)}
+              className="text-sm"
             >
               Data Summary
             </TabsTrigger>
             <TabsTrigger 
               value="visualizations"
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/visualizations`)}
+              className="text-sm"
             >
               Visualizations
             </TabsTrigger>
             <TabsTrigger 
               value="insights"
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/insights`)}
+              className="text-sm"
             >
               AI Insights
             </TabsTrigger>
             <TabsTrigger 
               value="chat"
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/chat`)}
+              className="text-sm"
             >
               AI Chat
             </TabsTrigger>
           </TabsList>
 
-          <div className="mt-4 h-full">
+          <div className="h-full">
             <Routes>
               <Route
                 index
