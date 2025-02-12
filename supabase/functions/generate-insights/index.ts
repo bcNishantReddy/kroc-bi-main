@@ -22,44 +22,58 @@ serve(async (req) => {
     console.log('Generating insights for columns:', columns);
     console.log('Sample data:', data.slice(0, 2));
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "You are a data analyst assistant that provides insights about datasets. Format your response in HTML with proper headings and bullet points."
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    if (!geminiApiKey) {
+      throw new Error('Gemini API key not found');
+    }
+
+    const prompt = `Analyze this dataset with columns: ${columns.join(', ')}. 
+    Provide insights about:
+    1. Key patterns and trends
+    2. Correlations between variables
+    3. Interesting findings
+    4. Suggested visualizations
+    
+    Here's a sample of the data:
+    ${JSON.stringify(data.slice(0, 5), null, 2)}`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key=${geminiApiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
           },
-          {
-            role: "user",
-            content: `Analyze this dataset with columns: ${columns.join(', ')}. 
-            Provide insights about:
-            1. Key patterns and trends
-            2. Correlations between variables
-            3. Interesting findings
-            4. Suggested visualizations
-            
-            Here's a sample of the data:
-            ${JSON.stringify(data.slice(0, 5), null, 2)}`
-          }
-        ],
-      }),
-    });
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+      console.error('Gemini API error:', errorData);
+      throw new Error(`Gemini API error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const result = await response.json();
-    const insights = result.choices[0].message.content;
+    console.log('Gemini API response:', result);
 
+    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) {
+      throw new Error('Unexpected response format from Gemini API');
+    }
+
+    const insights = result.candidates[0].content.parts[0].text;
     console.log('Successfully generated insights');
 
     return new Response(

@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bundle_insights: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          id: string
+          insight_text: string
+          insight_type: string
+          visualization_data: Json | null
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          id?: string
+          insight_text: string
+          insight_type: string
+          visualization_data?: Json | null
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          id?: string
+          insight_text?: string
+          insight_type?: string
+          visualization_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_insights_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_bundle"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bundles: {
         Row: {
           columns_info: Json
