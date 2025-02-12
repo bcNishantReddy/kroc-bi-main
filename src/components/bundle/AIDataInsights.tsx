@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type Bundle = {
   id: string;
@@ -21,20 +22,15 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
   const generateInsights = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/generate-insights', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('generate-insights', {
+        body: {
           data: bundle.raw_data.slice(0, 100),
           columns: Object.keys(bundle.raw_data[0] || {}),
-        }),
+        },
       });
 
-      if (!response.ok) throw new Error('Failed to generate insights');
+      if (error) throw error;
       
-      const data = await response.json();
       setInsights(data.insights);
     } catch (error) {
       console.error('Error generating insights:', error);

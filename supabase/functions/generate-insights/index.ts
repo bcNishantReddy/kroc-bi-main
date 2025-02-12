@@ -15,6 +15,13 @@ serve(async (req) => {
   try {
     const { data, columns } = await req.json();
 
+    if (!data || !columns) {
+      throw new Error('Missing required data or columns');
+    }
+
+    console.log('Generating insights for columns:', columns);
+    console.log('Sample data:', data.slice(0, 2));
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -22,7 +29,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -44,8 +51,16 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
     const result = await response.json();
     const insights = result.choices[0].message.content;
+
+    console.log('Successfully generated insights');
 
     return new Response(
       JSON.stringify({ insights }),
@@ -54,8 +69,15 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: 'An unexpected error occurred', details: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ 
+        error: 'An unexpected error occurred', 
+        details: error.message,
+        stack: error.stack 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 500 
+      }
     );
   }
 });
