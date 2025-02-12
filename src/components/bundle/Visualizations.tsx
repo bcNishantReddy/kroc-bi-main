@@ -26,6 +26,13 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
 
   const columnNames = Object.keys(bundle.raw_data[0] || {});
 
+  // Define the plot configuration
+  const plotConfig = {
+    responsive: true,
+    displayModeBar: true,
+    displaylogo: false,
+  };
+
   const downloadChart = () => {
     const plotElement = document.querySelector('.js-plotly-plot');
     if (plotElement) {
@@ -138,7 +145,7 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
                   <SelectValue placeholder="Select grouping" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {columnNames.map((name) => (
                     <SelectItem key={name} value={name}>
                       {name}
@@ -172,7 +179,7 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
               <Plot
                 data={plotData}
                 layout={{...layout, height: '100%', width: '100%'}}
-                config={config}
+                config={plotConfig}
                 className="w-full h-full"
                 style={{ width: '100%', height: '100%' }}
               />
@@ -189,3 +196,4 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
 };
 
 export default Visualizations;
+
