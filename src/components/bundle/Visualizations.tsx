@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Plot from 'react-plotly.js';
+import ReactECharts from 'echarts-for-react';
 import { Download, Settings2 } from "lucide-react";
 
 type Bundle = {
@@ -20,67 +20,172 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
   const [chartType, setChartType] = useState<ChartType>("line");
   const [xAxis, setXAxis] = useState<string>("");
   const [yAxis, setYAxis] = useState<string>("");
-  const [groupBy, setGroupBy] = useState<string>("");
-  const [plotData, setPlotData] = useState<any[]>([]);
-  const [layout, setLayout] = useState<any>({});
+  const [groupBy, setGroupBy] = useState<string>("none");
+  const [echartsOption, setEchartsOption] = useState<any>({});
 
   const columnNames = Object.keys(bundle.raw_data[0] || {});
 
-  // Define the plot configuration
-  const plotConfig = {
-    responsive: true,
-    displayModeBar: true,
-    displaylogo: false,
-  };
-
   const downloadChart = () => {
-    const plotElement = document.querySelector('.js-plotly-plot');
-    if (plotElement) {
-      // @ts-ignore - Plotly types are not complete
-      Plotly.downloadImage(plotElement, {
-        format: 'png',
-        height: 800,
-        width: 1200,
-        filename: `${bundle.name}-chart`,
+    const echartsInstance = echartsRef.current?.getEchartsInstance();
+    if (echartsInstance) {
+      const base64 = echartsInstance.getDataURL({
+        type: 'png',
+        pixelRatio: 2,
+        backgroundColor: '#fff'
       });
+      const link = document.createElement('a');
+      link.download = `${bundle.name}-chart.png`;
+      link.href = base64;
+      link.click();
     }
   };
+
+  const echartsRef = React.useRef<ReactECharts>(null);
 
   useEffect(() => {
     if (!xAxis || !yAxis || !bundle.raw_data.length) return;
 
     try {
-      let newPlotData: any = {
-        x: bundle.raw_data.map(item => item[xAxis]),
-        y: bundle.raw_data.map(item => item[yAxis]),
-        type: chartType,
-        mode: chartType === 'scatter' ? 'markers' : undefined,
-        marker: { color: '#8884d8' },
-        name: yAxis,
+      let series: any[] = [];
+      let xAxisData: any[] = [];
+      let options: any = {
+        title: {
+          text: `${yAxis} vs ${xAxis}`,
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          name: xAxis,
+          nameLocation: 'middle',
+          nameGap: 30,
+          data: []
+        },
+        yAxis: {
+          type: 'value',
+          name: yAxis,
+          nameLocation: 'middle',
+          nameGap: 50
+        },
+        toolbox: {
+          feature: {
+            saveAsImage: { title: 'Save' }
+          }
+        }
       };
 
-      if (groupBy) {
+      if (groupBy && groupBy !== 'none') {
+        // Handle grouped data
         const groups = [...new Set(bundle.raw_data.map(item => item[groupBy]))];
-        newPlotData = groups.map(group => ({
-          ...newPlotData,
-          x: bundle.raw_data.filter(item => item[groupBy] === group).map(item => item[xAxis]),
-          y: bundle.raw_data.filter(item => item[groupBy] === group).map(item => item[yAxis]),
-          name: `${group}`,
+        groups.forEach((group) => {
+          const groupData = bundle.raw_data.filter(item => item[groupBy] === group);
+          const seriesData = groupData.map(item => ({
+            value: item[yAxis],
+            name: item[xAxis]
+          }));
+
+          series.push({
+            name: `${group}`,
+            type: chartType === 'scatter' ? 'scatter' : chartType,
+            data: seriesData,
+            smooth: chartType === 'line',
+          });
+        });
+
+        xAxisData = [...new Set(bundle.raw_data.map(item => item[xAxis]))];
+      } else {
+        // Handle ungrouped data
+        const seriesData = bundle.raw_data.map(item => ({
+          value: item[yAxis],
+          name: item[xAxis]
         }));
+
+        series.push({
+          name: yAxis,
+          type: chartType === 'scatter' ? 'scatter' : chartType,
+          data: seriesData,
+          smooth: chartType === 'line',
+        });
+
+        xAxisData = bundle.raw_data.map(item => item[xAxis]);
       }
 
-      setPlotData(Array.isArray(newPlotData) ? newPlotData : [newPlotData]);
+      // Update options based on chart type
+      if (chartType === 'pie') {
+        options = {
+          ...options,
+          series: [{
+            type: 'pie',
+            radius: '50%',
+            data: series[0].data,
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }]
+        };
+      } else if (chartType === 'histogram') {
+        // Convert to histogram data
+        const values = bundle.raw_data.map(item => item[yAxis]);
+        const bins = 20;
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const binSize = (max - min) / bins;
+        const histogramData = new Array(bins).fill(0);
+        
+        values.forEach(value => {
+          const binIndex = Math.min(Math.floor((value - min) / binSize), bins - 1);
+          histogramData[binIndex]++;
+        });
 
-      setLayout({
-        autosize: true,
-        title: `${yAxis} vs ${xAxis}`,
-        xaxis: { title: xAxis },
-        yaxis: { title: yAxis },
-        hovermode: 'closest',
-        margin: { l: 50, r: 50, b: 50, t: 50 },
-      });
+        options = {
+          ...options,
+          xAxis: {
+            type: 'category',
+            data: histogramData.map((_, i) => `${(min + i * binSize).toFixed(2)}-${(min + (i + 1) * binSize).toFixed(2)}`)
+          },
+          series: [{
+            type: 'bar',
+            data: histogramData
+          }]
+        };
+      } else {
+        options = {
+          ...options,
+          xAxis: {
+            ...options.xAxis,
+            data: xAxisData
+          },
+          series: series
+        };
+      }
+
+      // Add legend if grouped
+      if (groupBy && groupBy !== 'none') {
+        options.legend = {
+          type: 'scroll',
+          orient: 'horizontal',
+          bottom: 0
+        };
+      }
+
+      setEchartsOption(options);
     } catch (error) {
-      console.error('Error updating plot:', error);
+      console.error('Error updating chart:', error);
     }
   }, [xAxis, yAxis, groupBy, chartType, bundle.raw_data]);
 
@@ -100,7 +205,6 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
                   <SelectItem value="bar">Bar Chart</SelectItem>
                   <SelectItem value="scatter">Scatter Plot</SelectItem>
                   <SelectItem value="pie">Pie Chart</SelectItem>
-                  <SelectItem value="box">Box Plot</SelectItem>
                   <SelectItem value="histogram">Histogram</SelectItem>
                 </SelectContent>
               </Select>
@@ -176,12 +280,11 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
 
           <div className="flex-1 min-h-[400px]">
             {xAxis && yAxis ? (
-              <Plot
-                data={plotData}
-                layout={{...layout, height: '100%', width: '100%'}}
-                config={plotConfig}
-                className="w-full h-full"
-                style={{ width: '100%', height: '100%' }}
+              <ReactECharts
+                ref={echartsRef}
+                option={echartsOption}
+                style={{ height: '100%', width: '100%' }}
+                theme="light"
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
