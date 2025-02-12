@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
   user: User | null;
@@ -19,44 +19,87 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check active sessions
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user && location.pathname === '/auth') {
-        navigate('/dashboard');
-      }
-    });
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw sessionError;
+        }
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user && location.pathname === '/auth') {
-        navigate('/dashboard');
-      }
-      if (!session?.user && location.pathname.includes('/dashboard/bundle')) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to access this feature",
+        setUser(session?.user ?? null);
+        
+        if (session?.user && location.pathname === '/auth') {
+          navigate('/dashboard');
+        }
+
+        // Set up auth state change listener
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log("Auth state change:", event, session?.user?.id);
+          
+          // Handle various auth events
+          switch (event) {
+            case 'SIGNED_IN':
+              setUser(session?.user ?? null);
+              if (location.pathname === '/auth') {
+                navigate('/dashboard');
+              }
+              break;
+            case 'SIGNED_OUT':
+              setUser(null);
+              navigate('/');
+              break;
+            case 'TOKEN_REFRESHED':
+              setUser(session?.user ?? null);
+              break;
+            case 'USER_UPDATED':
+              setUser(session?.user ?? null);
+              break;
+          }
+
+          // Handle protected route access
+          if (!session?.user && location.pathname.includes('/dashboard')) {
+            toast({
+              title: "Authentication required",
+              description: "Please sign in to access this feature",
+            });
+            navigate("/auth");
+          }
         });
-        navigate("/auth");
-      }
-    });
 
-    return () => subscription.unsubscribe();
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "There was a problem with authentication. Please try signing in again.",
+        });
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, [navigate, location.pathname]);
 
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        // If we get a session_not_found error, we can still clear the local state
         if (error.message.includes('session_not_found')) {
           console.log('Session not found, clearing local state');
           setUser(null);
@@ -86,6 +129,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate("/");
     }
   };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <AuthContext.Provider value={{ user, signOut }}>

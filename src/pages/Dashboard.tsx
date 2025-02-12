@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useToast } from "@/hooks/use-toast";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Overview from "@/components/dashboard/Overview";
 import BundleView from "./BundleView";
@@ -15,6 +16,7 @@ const Dashboard = () => {
   const [fileData, setFileData] = useState<File | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { bundles, loading, createBundle, deleteBundle } = useBundles();
+  const { toast } = useToast();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -88,4 +90,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
