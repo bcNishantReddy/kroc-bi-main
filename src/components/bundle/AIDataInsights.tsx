@@ -30,7 +30,7 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
         .eq('insight_type', 'general')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error loading insights:', error);
