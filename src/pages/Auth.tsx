@@ -1,16 +1,19 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, UserCircle2, Lock } from "lucide-react";
+import { Loader2, UserCircle2, Lock, Mail } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const isSignUp = searchParams.get("mode") === "signup";
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -72,13 +75,20 @@ const Auth = () => {
           return;
         }
 
-        if (user) {
+        if (user?.identities?.length === 0) {
           toast({
-            title: "Success",
-            description: "Account created successfully! Please check your email to verify your account.",
+            variant: "destructive",
+            title: "Error",
+            description: "This email is already registered. Please sign in instead.",
           });
-          navigate("/dashboard");
+          return;
         }
+
+        toast({
+          title: "Success",
+          description: "Account created successfully! Please check your email to verify your account.",
+        });
+        navigate("/auth"); // Redirect to signin
       } else {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -87,10 +97,15 @@ const Auth = () => {
 
         if (error) {
           console.error("Sign in error:", error);
-          let errorMessage = error.message;
-          if (error.message.includes("Invalid login credentials")) {
-            errorMessage = "Invalid email or password. Please try again.";
+          let errorMessage = "Invalid email or password. Please try again.";
+          
+          // Handle specific error cases
+          if (error.message?.toLowerCase().includes("email not confirmed")) {
+            errorMessage = "Please verify your email address before signing in. Check your inbox for the verification link.";
+          } else if (error.message?.toLowerCase().includes("invalid login credentials")) {
+            errorMessage = "Invalid email or password. Please check your credentials and try again.";
           }
+          
           toast({
             variant: "destructive",
             title: "Sign In Error",
@@ -131,17 +146,27 @@ const Auth = () => {
               </div>
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Welcome to Kroc-BI
+              {isSignUp ? "Create an Account" : "Welcome Back"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Sign in to your account or create a new one
+              {isSignUp
+                ? "Sign up to start using Kroc-BI"
+                : "Sign in to your account"}
             </p>
           </div>
 
           <div className="space-y-6">
+            <Alert>
+              <AlertDescription>
+                {isSignUp
+                  ? "You'll need to verify your email address after signing up."
+                  : "Make sure to use the email address you verified during signup."}
+              </AlertDescription>
+            </Alert>
+
             <div className="space-y-4">
               <div className="relative">
-                <UserCircle2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="email"
                   placeholder="Email"
@@ -165,27 +190,28 @@ const Auth = () => {
             <div className="space-y-3">
               <Button
                 className="w-full h-11 text-base font-medium"
-                onClick={() => handleAuth("signin")}
+                onClick={() => handleAuth(isSignUp ? "signup" : "signin")}
                 disabled={loading}
               >
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : isSignUp ? (
+                  "Create Account"
                 ) : (
                   "Sign In"
                 )}
               </Button>
-              <Button
-                variant="outline"
-                className="w-full h-11 text-base font-medium"
-                onClick={() => handleAuth("signup")}
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
+              <div className="text-center">
+                <Button
+                  variant="link"
+                  className="text-sm"
+                  onClick={() => navigate(isSignUp ? "/auth" : "/auth?mode=signup")}
+                >
+                  {isSignUp
+                    ? "Already have an account? Sign in"
+                    : "Don't have an account? Sign up"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -195,3 +221,4 @@ const Auth = () => {
 };
 
 export default Auth;
+
