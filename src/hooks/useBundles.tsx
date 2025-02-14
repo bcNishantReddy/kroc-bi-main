@@ -20,6 +20,11 @@ export const useBundles = () => {
 
   const loadBundles = async () => {
     try {
+      if (!user) {
+        setBundles([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("bundles")
         .select("*")
@@ -81,7 +86,7 @@ export const useBundles = () => {
 
       const { error } = await supabase.from("bundles").insert({
         name: newBundleName,
-        user_id: user?.id,
+        user_id: user.id,
         raw_data: data,
         columns_info: {},
         summary_stats: {},
@@ -136,7 +141,7 @@ export const useBundles = () => {
 
   useEffect(() => {
     loadBundles();
-  }, []);
+  }, [user]); // Added user dependency to reload when auth state changes
 
   return {
     bundles,
@@ -145,4 +150,3 @@ export const useBundles = () => {
     deleteBundle,
   };
 };
-
