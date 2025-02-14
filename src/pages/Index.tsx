@@ -30,7 +30,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="p-4 flex justify-end">
+      <nav className="p-4 flex justify-end max-w-7xl mx-auto">
         {user ? (
           <Button onClick={() => navigate("/dashboard")}>
             Go to Dashboard <ArrowRight className="ml-2 w-4 h-4" />
@@ -43,12 +43,12 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="section-padding flex flex-col items-center justify-center min-h-[70vh] text-center">
+      <section className="flex flex-col items-center justify-center min-h-[70vh] px-4 md:px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-3xl mx-auto px-4"
+          className="max-w-3xl mx-auto text-center"
         >
           <div className="inline-flex items-center justify-center px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-accent text-accent-foreground">
             🚀 Welcome to the future of data analysis
@@ -56,10 +56,10 @@ const Index = () => {
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
             Kroc-BI
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8">
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 px-4">
             Transform your data into actionable insights with AI-powered analytics
           </p>
-          <div className="space-x-4">
+          <div className="flex flex-wrap gap-4 justify-center">
             {user ? (
               <Button
                 size="lg"
@@ -92,8 +92,8 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="section-padding bg-accent/20">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="bg-accent/20 py-12 md:py-24">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
           <h2 className="text-3xl font-bold text-center mb-12">
             Everything you need for data analysis
           </h2>

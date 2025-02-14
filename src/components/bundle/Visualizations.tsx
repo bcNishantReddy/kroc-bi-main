@@ -43,7 +43,7 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
   };
 
   return (
-    <div className="h-full p-4">
+    <div className="h-full w-full p-4">
       <Card className="p-6 h-full">
         <div className="flex flex-col h-full">
           <ChartControls
@@ -58,7 +58,7 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
             columnNames={Object.keys(bundle.raw_data[0] || {})}
           />
 
-          <div className="flex justify-end space-x-2 mb-4">
+          <div className="flex flex-wrap justify-end gap-2 mb-4">
             <Button 
               variant="outline" 
               onClick={downloadChart}
@@ -73,13 +73,14 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
             />
           </div>
 
-          <div className="flex-1 min-h-[400px]">
+          <div className="flex-1 min-h-[400px] w-full">
             {xAxis && yAxis ? (
               <ReactECharts
                 ref={echartsRef}
                 option={echartsOption}
-                style={{ height: '100%', width: '100%' }}
+                style={{ height: '100%', width: '100%', minHeight: '400px' }}
                 theme="light"
+                opts={{ renderer: 'canvas' }}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">

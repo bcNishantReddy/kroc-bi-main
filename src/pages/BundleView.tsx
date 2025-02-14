@@ -38,7 +38,6 @@ const BundleView = () => {
 
         if (error) throw error;
         
-        // Ensure raw_data is parsed as an array
         const parsedData = {
           ...data,
           raw_data: Array.isArray(data.raw_data) ? data.raw_data : [],
@@ -93,9 +92,9 @@ const BundleView = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="min-h-screen bg-background"
+      className="min-h-screen bg-background w-full"
     >
-      <div className="container mx-auto px-4 py-6 max-w-[2000px]">
+      <div className="w-full h-full px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button
@@ -110,7 +109,7 @@ const BundleView = () => {
         </div>
 
         <Tabs defaultValue="summary" className="h-[calc(100vh-200px)]">
-          <TabsList className="grid w-full grid-cols-4 lg:w-[600px] mb-6">
+          <TabsList className="grid w-full md:w-[600px] grid-cols-2 md:grid-cols-4 mb-6">
             <TabsTrigger 
               value="summary" 
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/summary`)}

@@ -88,7 +88,7 @@ const Auth = () => {
           title: "Success",
           description: "Account created successfully! Please check your email to verify your account.",
         });
-        navigate("/auth"); // Redirect to signin
+        navigate("/auth");
       } else {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -99,7 +99,6 @@ const Auth = () => {
           console.error("Sign in error:", error);
           let errorMessage = "Invalid email or password. Please try again.";
           
-          // Handle specific error cases
           if (error.message?.toLowerCase().includes("email not confirmed")) {
             errorMessage = "Please verify your email address before signing in. Check your inbox for the verification link.";
           } else if (error.message?.toLowerCase().includes("invalid login credentials")) {
@@ -136,16 +135,16 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent/20 to-background p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-accent/20 to-background p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-6">
           <div className="text-center space-y-2">
             <div className="flex justify-center">
               <div className="h-20 w-20 bg-primary/5 rounded-full flex items-center justify-center">
                 <UserCircle2 className="h-10 w-10 text-primary" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900">
               {isSignUp ? "Create an Account" : "Welcome Back"}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -221,4 +220,3 @@ const Auth = () => {
 };
 
 export default Auth;
-
