@@ -3,20 +3,29 @@ import React, { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import ReactECharts from 'echarts-for-react';
-import { Download, Settings2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { Bundle, ChartType } from "./types/bundle";
 import { useChartConfig } from "./hooks/useChartConfig";
 import ChartControls from "./components/ChartControls";
+import ChartAdvancedOptions, { ChartOptions } from "./components/ChartAdvancedOptions";
 
 const Visualizations = ({ bundle }: { bundle: Bundle }) => {
   const [chartType, setChartType] = useState<ChartType>("line");
   const [xAxis, setXAxis] = useState<string>("");
   const [yAxis, setYAxis] = useState<string>("");
   const [groupBy, setGroupBy] = useState<string>("none");
+  const [chartOptions, setChartOptions] = useState<ChartOptions>({
+    title: "",
+    legendPosition: "bottom",
+    showGrid: true,
+    colors: ['#9b87f5', '#0EA5E9', '#F97316', '#D946EF', '#8B5CF6'],
+    xAxisLabel: "",
+    yAxisLabel: ""
+  });
+  
   const echartsRef = useRef<ReactECharts>(null);
 
-  const { echartsOption } = useChartConfig(bundle, chartType, xAxis, yAxis, groupBy);
-  const columnNames = Object.keys(bundle.raw_data[0] || {});
+  const { echartsOption } = useChartConfig(bundle, chartType, xAxis, yAxis, groupBy, chartOptions);
 
   const downloadChart = () => {
     const echartsInstance = echartsRef.current?.getEchartsInstance();
@@ -46,7 +55,7 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
             setYAxis={setYAxis}
             groupBy={groupBy}
             setGroupBy={setGroupBy}
-            columnNames={columnNames}
+            columnNames={Object.keys(bundle.raw_data[0] || {})}
           />
 
           <div className="flex justify-end space-x-2 mb-4">
@@ -58,13 +67,10 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
               <Download className="h-4 w-4" />
               Download
             </Button>
-            <Button 
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Settings2 className="h-4 w-4" />
-              Advanced Options
-            </Button>
+            <ChartAdvancedOptions 
+              options={chartOptions}
+              onOptionsChange={setChartOptions}
+            />
           </div>
 
           <div className="flex-1 min-h-[400px]">
@@ -88,4 +94,3 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
 };
 
 export default Visualizations;
-

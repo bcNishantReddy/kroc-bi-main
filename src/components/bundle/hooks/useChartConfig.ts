@@ -1,13 +1,15 @@
 
 import { useEffect, useState } from 'react';
 import { Bundle, ChartType } from '../types/bundle';
+import { ChartOptions } from '../components/ChartAdvancedOptions';
 
 export const useChartConfig = (
   bundle: Bundle,
   chartType: ChartType,
   xAxis: string,
   yAxis: string,
-  groupBy: string
+  groupBy: string,
+  chartOptions: ChartOptions
 ) => {
   const [echartsOption, setEchartsOption] = useState<any>({});
 
@@ -19,7 +21,7 @@ export const useChartConfig = (
       let xAxisData: any[] = [];
       let options: any = {
         title: {
-          text: `${yAxis} vs ${xAxis}`,
+          text: chartOptions.title || `${yAxis} vs ${xAxis}`,
           left: 'center'
         },
         tooltip: {
@@ -32,18 +34,19 @@ export const useChartConfig = (
           left: '3%',
           right: '4%',
           bottom: '3%',
-          containLabel: true
+          containLabel: true,
+          show: chartOptions.showGrid
         },
         xAxis: {
           type: 'category',
-          name: xAxis,
+          name: chartOptions.xAxisLabel || xAxis,
           nameLocation: 'middle',
           nameGap: 30,
           data: []
         },
         yAxis: {
           type: 'value',
-          name: yAxis,
+          name: chartOptions.yAxisLabel || yAxis,
           nameLocation: 'middle',
           nameGap: 50
         },
@@ -51,12 +54,13 @@ export const useChartConfig = (
           feature: {
             saveAsImage: { title: 'Save' }
           }
-        }
+        },
+        color: chartOptions.colors
       };
 
       if (groupBy && groupBy !== 'none') {
         const groups = [...new Set(bundle.raw_data.map(item => item[groupBy]))];
-        groups.forEach((group) => {
+        groups.forEach((group, index) => {
           const groupData = bundle.raw_data.filter(item => item[groupBy] === group);
           const seriesData = groupData.map(item => ({
             value: item[yAxis],
@@ -142,8 +146,8 @@ export const useChartConfig = (
       if (groupBy && groupBy !== 'none') {
         options.legend = {
           type: 'scroll',
-          orient: 'horizontal',
-          bottom: 0
+          orient: chartOptions.legendPosition === 'left' || chartOptions.legendPosition === 'right' ? 'vertical' : 'horizontal',
+          [chartOptions.legendPosition]: 0
         };
       }
 
@@ -151,8 +155,7 @@ export const useChartConfig = (
     } catch (error) {
       console.error('Error updating chart:', error);
     }
-  }, [xAxis, yAxis, groupBy, chartType, bundle.raw_data]);
+  }, [xAxis, yAxis, groupBy, chartType, bundle.raw_data, chartOptions]);
 
   return { echartsOption };
 };
-
