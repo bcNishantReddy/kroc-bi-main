@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -19,12 +18,27 @@ type Bundle = {
   summary_stats: Record<string, any>;
 };
 
+type MessageStatus = 'pending' | 'completed' | 'error';
+
 type Message = {
   id: string;
   message: string;
   response?: string;
-  response_status: 'pending' | 'completed' | 'error';
+  response_status: MessageStatus;
   created_at: string;
+};
+
+const isValidMessageStatus = (status: string): status is MessageStatus => {
+  return ['pending', 'completed', 'error'].includes(status);
+};
+
+const convertToMessage = (data: any): Message => {
+  return {
+    ...data,
+    response_status: isValidMessageStatus(data.response_status) 
+      ? data.response_status 
+      : 'error' // Default to error if status is invalid
+  };
 };
 
 const AIChat = ({ bundle }: { bundle: Bundle }) => {
@@ -46,13 +60,11 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
           .order("created_at", { ascending: true });
 
         if (error) throw error;
-        setMessages(data || []);
+        setMessages((data || []).map(convertToMessage));
       } catch (error) {
         console.error("Error loading messages:", error);
       }
     };
-
-    loadMessages();
 
     // Subscribe to real-time updates
     const channel = supabase
@@ -68,17 +80,19 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
         (payload) => {
           // Handle different types of changes
           if (payload.eventType === 'INSERT') {
-            setMessages(prev => [...prev, payload.new as Message]);
+            setMessages(prev => [...prev, convertToMessage(payload.new)]);
           } else if (payload.eventType === 'UPDATE') {
             setMessages(prev => 
               prev.map(msg => 
-                msg.id === payload.new.id ? payload.new as Message : msg
+                msg.id === payload.new.id ? convertToMessage(payload.new) : msg
               )
             );
           }
         }
       )
       .subscribe();
+
+    loadMessages();
 
     return () => {
       supabase.removeChannel(channel);
@@ -211,4 +225,3 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
 };
 
 export default AIChat;
-
