@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +7,11 @@ import { Bundle, ChartType } from "./types/bundle";
 import { useChartConfig } from "./hooks/useChartConfig";
 import ChartControls from "./components/ChartControls";
 import ChartAdvancedOptions, { ChartOptions } from "./components/ChartAdvancedOptions";
-
-const Visualizations = ({ bundle }: { bundle: Bundle }) => {
+const Visualizations = ({
+  bundle
+}: {
+  bundle: Bundle;
+}) => {
   const [chartType, setChartType] = useState<ChartType>("line");
   const [xAxis, setXAxis] = useState<string>("");
   const [yAxis, setYAxis] = useState<string>("");
@@ -22,11 +24,10 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
     xAxisLabel: "",
     yAxisLabel: ""
   });
-  
   const echartsRef = useRef<ReactECharts>(null);
-
-  const { echartsOption } = useChartConfig(bundle, chartType, xAxis, yAxis, groupBy, chartOptions);
-
+  const {
+    echartsOption
+  } = useChartConfig(bundle, chartType, xAxis, yAxis, groupBy, chartOptions);
   const downloadChart = () => {
     const echartsInstance = echartsRef.current?.getEchartsInstance();
     if (echartsInstance) {
@@ -41,57 +42,32 @@ const Visualizations = ({ bundle }: { bundle: Bundle }) => {
       link.click();
     }
   };
-
-  return (
-    <div className="h-full w-full p-4">
-      <Card className="p-6 h-full">
+  return <div className="h-full w-full p-4">
+      <Card className="p-6 h-full px-[21px] py-[20px] mx-[240px]">
         <div className="flex flex-col h-full">
-          <ChartControls
-            chartType={chartType}
-            setChartType={setChartType}
-            xAxis={xAxis}
-            setXAxis={setXAxis}
-            yAxis={yAxis}
-            setYAxis={setYAxis}
-            groupBy={groupBy}
-            setGroupBy={setGroupBy}
-            columnNames={Object.keys(bundle.raw_data[0] || {})}
-          />
+          <ChartControls chartType={chartType} setChartType={setChartType} xAxis={xAxis} setXAxis={setXAxis} yAxis={yAxis} setYAxis={setYAxis} groupBy={groupBy} setGroupBy={setGroupBy} columnNames={Object.keys(bundle.raw_data[0] || {})} />
 
           <div className="flex flex-wrap justify-end gap-2 mb-4">
-            <Button 
-              variant="outline" 
-              onClick={downloadChart}
-              className="flex items-center gap-2"
-            >
+            <Button variant="outline" onClick={downloadChart} className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Download
             </Button>
-            <ChartAdvancedOptions 
-              options={chartOptions}
-              onOptionsChange={setChartOptions}
-            />
+            <ChartAdvancedOptions options={chartOptions} onOptionsChange={setChartOptions} />
           </div>
 
           <div className="flex-1 min-h-[400px] w-full">
-            {xAxis && yAxis ? (
-              <ReactECharts
-                ref={echartsRef}
-                option={echartsOption}
-                style={{ height: '100%', width: '100%', minHeight: '400px' }}
-                theme="light"
-                opts={{ renderer: 'canvas' }}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
+            {xAxis && yAxis ? <ReactECharts ref={echartsRef} option={echartsOption} style={{
+            height: '100%',
+            width: '100%',
+            minHeight: '400px'
+          }} theme="light" opts={{
+            renderer: 'canvas'
+          }} /> : <div className="flex items-center justify-center h-full text-muted-foreground">
                 <p>Select axes to display the chart</p>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default Visualizations;
