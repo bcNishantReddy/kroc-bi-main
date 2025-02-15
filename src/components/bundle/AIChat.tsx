@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { MessageCircle, Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from 'react-markdown';
 
 type Bundle = {
   id: string;
@@ -22,6 +23,7 @@ type Message = {
   id: string;
   message: string;
   response?: string;
+  response_status: 'pending' | 'completed' | 'error';
   created_at: string;
 };
 
@@ -30,7 +32,7 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const navigate = useNavigate(); // Add this line
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
 
@@ -63,7 +65,18 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
           table: 'chat_messages',
           filter: `bundle_id=eq.${bundle.id}`,
         },
-        loadMessages
+        (payload) => {
+          // Handle different types of changes
+          if (payload.eventType === 'INSERT') {
+            setMessages(prev => [...prev, payload.new as Message]);
+          } else if (payload.eventType === 'UPDATE') {
+            setMessages(prev => 
+              prev.map(msg => 
+                msg.id === payload.new.id ? payload.new as Message : msg
+              )
+            );
+          }
+        }
       )
       .subscribe();
 
@@ -91,6 +104,7 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
         bundle_id: bundle.id,
         user_id: user?.id,
         message: newMessage,
+        response_status: 'pending'
       });
 
       if (error) throw error;
@@ -132,13 +146,23 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
                   <div className="bg-accent/20 rounded-lg p-3">
                     <p className="whitespace-pre-wrap">{message.message}</p>
                   </div>
-                  {message.response && (
+                  {message.response_status === 'pending' ? (
+                    <motion.div
+                      initial={{ opacity: 0.5 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ repeat: Infinity, duration: 1 }}
+                      className="bg-primary/10 rounded-lg p-3 ml-4 flex items-center gap-2"
+                    >
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm text-muted-foreground">AI is thinking...</span>
+                    </motion.div>
+                  ) : message.response && (
                     <motion.div
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="bg-primary/10 rounded-lg p-3 ml-4"
+                      className="bg-primary/10 rounded-lg p-3 ml-4 prose prose-sm dark:prose-invert"
                     >
-                      <p className="whitespace-pre-wrap">{message.response}</p>
+                      <ReactMarkdown>{message.response}</ReactMarkdown>
                     </motion.div>
                   )}
                 </motion.div>
@@ -187,3 +211,4 @@ const AIChat = ({ bundle }: { bundle: Bundle }) => {
 };
 
 export default AIChat;
+
