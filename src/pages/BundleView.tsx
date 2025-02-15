@@ -94,53 +94,54 @@ const BundleView = () => {
       animate={{ opacity: 1, y: 0 }}
       className="min-h-screen bg-background w-full"
     >
-      <div className="w-full h-full px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+      <div className="container mx-auto max-w-[1400px] px-4 py-8 space-y-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-6">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate("/dashboard/overview")}
+              className="hover:bg-accent/50"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-bold">{bundle.name}</h1>
+            <h1 className="text-3xl font-bold">{bundle.name}</h1>
           </div>
         </div>
 
-        <Tabs defaultValue="summary" className="h-[calc(100vh-200px)]">
-          <TabsList className="grid w-full md:w-[600px] grid-cols-2 md:grid-cols-4 mb-6">
+        <Tabs defaultValue="summary" className="w-full space-y-8">
+          <TabsList className="w-full max-w-3xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-2">
             <TabsTrigger 
               value="summary" 
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/summary`)}
-              className="text-sm"
+              className="text-sm py-3"
             >
               Data Summary
             </TabsTrigger>
             <TabsTrigger 
               value="visualizations"
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/visualizations`)}
-              className="text-sm"
+              className="text-sm py-3"
             >
               Visualizations
             </TabsTrigger>
             <TabsTrigger 
               value="insights"
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/insights`)}
-              className="text-sm"
+              className="text-sm py-3"
             >
               AI Insights
             </TabsTrigger>
             <TabsTrigger 
               value="chat"
               onClick={() => navigate(`/dashboard/bundle/${bundleId}/chat`)}
-              className="text-sm"
+              className="text-sm py-3"
             >
               AI Chat
             </TabsTrigger>
           </TabsList>
 
-          <div className="h-full">
+          <div className="w-full min-h-[calc(100vh-300px)]">
             <Routes>
               <Route
                 index
@@ -171,3 +172,4 @@ const BundleView = () => {
 };
 
 export default BundleView;
+
