@@ -42,20 +42,6 @@ export type Database = {
             referencedRelation: "bundles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_bundle"
-            columns: ["bundle_id"]
-            isOneToOne: false
-            referencedRelation: "bundles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_bundle_insights_bundle"
-            columns: ["bundle_id"]
-            isOneToOne: false
-            referencedRelation: "bundles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       bundles: {
@@ -126,13 +112,6 @@ export type Database = {
           },
           {
             foreignKeyName: "chat_messages_bundle_id_fkey1"
-            columns: ["bundle_id"]
-            isOneToOne: false
-            referencedRelation: "bundles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_chat_messages_bundle"
             columns: ["bundle_id"]
             isOneToOne: false
             referencedRelation: "bundles"
