@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import ReactMarkdown from 'react-markdown';
 
 type Bundle = {
   id: string;
@@ -38,9 +39,10 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
       }
 
       if (data) {
-        setInsights(data.insight_text);
+        // Remove any asterisks that might be present in the text
+        const cleanedText = data.insight_text.replace(/\*/g, '');
+        setInsights(cleanedText);
       } else {
-        // If no insights found, generate new ones
         await generateInsights();
       }
     } catch (error) {
@@ -68,9 +70,8 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
 
       if (aiError) throw aiError;
       
-      const generatedInsights = aiResponse.insights;
+      const generatedInsights = aiResponse.insights.replace(/\*/g, '');
 
-      // Store the insights in the bundle_insights table
       const { error: insertError } = await supabase.from('bundle_insights').insert({
         bundle_id: bundle.id,
         insight_type: 'general',
@@ -97,7 +98,7 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
   }, [bundle.id]);
 
   return (
-    <Card className="p-6 h-full">
+    <Card className="p-6 h-full w-full">
       <div className="flex flex-col h-full">
         <h2 className="text-2xl font-bold mb-4">AI Data Insights</h2>
         {loading ? (
@@ -112,9 +113,9 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
           </div>
         ) : (
           <div className="space-y-4 flex-1">
-            <div className="prose max-w-none">
+            <div className="prose prose-sm md:prose-base lg:prose-lg max-w-none">
               {insights ? (
-                <div dangerouslySetInnerHTML={{ __html: insights }} />
+                <ReactMarkdown>{insights}</ReactMarkdown>
               ) : (
                 <p>No insights generated yet.</p>
               )}
@@ -134,3 +135,4 @@ const AIDataInsights = ({ bundle }: { bundle: Bundle }) => {
 };
 
 export default AIDataInsights;
+
