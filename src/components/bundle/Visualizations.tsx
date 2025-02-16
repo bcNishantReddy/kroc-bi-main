@@ -44,7 +44,7 @@ const Visualizations = ({
   };
   return <div className="h-full w-full p-4 px-0 py-0">
       <Card className="p-6 h-full py-[20px] mx-[102px] px-0">
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full mx-0">
           <ChartControls chartType={chartType} setChartType={setChartType} xAxis={xAxis} setXAxis={setXAxis} yAxis={yAxis} setYAxis={setYAxis} groupBy={groupBy} setGroupBy={setGroupBy} columnNames={Object.keys(bundle.raw_data[0] || {})} />
 
           <div className="flex flex-wrap justify-end gap-2 mb-4 px-[29px] py-[9px]">
