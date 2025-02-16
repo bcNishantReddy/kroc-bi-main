@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Routes, Route, useParams, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -127,7 +128,7 @@ const BundleView = () => {
           </div>
         </div>
 
-        <nav className="flex justify-center mb-8">
+        <nav className="fixed left-1/2 transform -translate-x-1/2 z-10 top-24">
           <div className="bg-card rounded-full p-1 shadow-lg">
             <div className="flex space-x-1">
               {tabs.map((tab) => {
@@ -152,7 +153,7 @@ const BundleView = () => {
           </div>
         </nav>
 
-        <div className="w-full min-h-[calc(100vh-300px)]">
+        <div className="w-full min-h-[calc(100vh-300px)] mt-20">
           <Routes>
             <Route index element={<Navigate to="summary" replace />} />
             <Route path="summary" element={<DataSummary bundle={bundle} />} />
