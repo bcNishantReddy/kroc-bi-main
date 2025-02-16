@@ -43,7 +43,7 @@ const Visualizations = ({
     }
   };
   return <div className="h-full w-full p-4 px-0 py-0">
-      <Card className="p-6 h-full px-[21px] py-[20px] mx-[240px]">
+      <Card className="p-6 h-full py-[20px] mx-[102px] px-0">
         <div className="flex flex-col h-full">
           <ChartControls chartType={chartType} setChartType={setChartType} xAxis={xAxis} setXAxis={setXAxis} yAxis={yAxis} setYAxis={setYAxis} groupBy={groupBy} setGroupBy={setGroupBy} columnNames={Object.keys(bundle.raw_data[0] || {})} />
 
@@ -55,7 +55,7 @@ const Visualizations = ({
             <ChartAdvancedOptions options={chartOptions} onOptionsChange={setChartOptions} />
           </div>
 
-          <div className="flex-1 min-h-[400px] w-full">
+          <div className="flex-1 min-h-[400px] w-full mx-0 px-[240px] py-[77px] my-[17px]">
             {xAxis && yAxis ? <ReactECharts ref={echartsRef} option={echartsOption} style={{
             height: '100%',
             width: '100%',
