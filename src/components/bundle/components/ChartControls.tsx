@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChartType } from '../types/bundle';
+
 interface ChartControlsProps {
   chartType: ChartType;
   setChartType: (value: ChartType) => void;
@@ -12,6 +14,7 @@ interface ChartControlsProps {
   setGroupBy: (value: string) => void;
   columnNames: string[];
 }
+
 const ChartControls = ({
   chartType,
   setChartType,
@@ -23,7 +26,8 @@ const ChartControls = ({
   setGroupBy,
   columnNames
 }: ChartControlsProps) => {
-  return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 mx-[26px] my-[3px]">
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <div>
         <label className="block text-sm font-medium mb-2">Chart Type</label>
         <Select value={chartType} onValueChange={(value: ChartType) => setChartType(value)}>
@@ -47,9 +51,11 @@ const ChartControls = ({
             <SelectValue placeholder="Select X axis" />
           </SelectTrigger>
           <SelectContent>
-            {columnNames.map(name => <SelectItem key={name} value={name}>
+            {columnNames.map((name) => (
+              <SelectItem key={name} value={name}>
                 {name}
-              </SelectItem>)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -61,9 +67,11 @@ const ChartControls = ({
             <SelectValue placeholder="Select Y axis" />
           </SelectTrigger>
           <SelectContent>
-            {columnNames.map(name => <SelectItem key={name} value={name}>
+            {columnNames.map((name) => (
+              <SelectItem key={name} value={name}>
                 {name}
-              </SelectItem>)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -76,12 +84,17 @@ const ChartControls = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">None</SelectItem>
-            {columnNames.map(name => <SelectItem key={name} value={name}>
+            {columnNames.map((name) => (
+              <SelectItem key={name} value={name}>
                 {name}
-              </SelectItem>)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default ChartControls;
+

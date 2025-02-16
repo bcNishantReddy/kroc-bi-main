@@ -1,6 +1,9 @@
+
 import { BarChart3, Layers, MessageSquare } from "lucide-react";
+
 const Overview = () => {
-  return <div className="w-full p-4 md:p-6 px-[240px] mx-[6px]">
+  return (
+    <div className="w-full p-4 md:p-6">
       <h1 className="text-2xl font-bold mb-6">Overview</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <div className="p-6 rounded-lg bg-accent/20 transition-all hover:bg-accent/30">
@@ -25,6 +28,8 @@ const Overview = () => {
           </p>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Overview;
