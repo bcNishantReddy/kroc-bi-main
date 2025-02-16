@@ -113,7 +113,7 @@ const BundleView = () => {
       animate={{ opacity: 1, y: 0 }}
       className="min-h-screen bg-background w-full"
     >
-      <div className="container mx-auto max-w-[1400px] px-4 py-8 space-y-8">
+      <div className="container mx-auto max-w-[1400px] px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-6">
             <Button
@@ -128,32 +128,34 @@ const BundleView = () => {
           </div>
         </div>
 
-        <nav className="fixed left-1/2 transform -translate-x-1/2 z-10 top-24">
-          <div className="bg-card rounded-full p-1 shadow-lg">
-            <div className="flex space-x-1">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = currentPath === tab.path;
-                return (
-                  <Button
-                    key={tab.id}
-                    variant={isActive ? "default" : "ghost"}
-                    className={cn(
-                      "rounded-full px-6 py-2 transition-all duration-200",
-                      isActive ? "shadow-sm" : "hover:bg-accent/50"
-                    )}
-                    onClick={() => navigate(`/dashboard/bundle/${bundleId}/${tab.path}`)}
-                  >
-                    <Icon className="w-4 h-4 mr-2" />
-                    <span className="hidden md:inline">{tab.label}</span>
-                  </Button>
-                );
-              })}
+        <div className="sticky top-0 z-50 py-4 bg-background">
+          <nav className="flex justify-center">
+            <div className="bg-card rounded-full p-1 shadow-lg">
+              <div className="flex space-x-1">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = currentPath === tab.path;
+                  return (
+                    <Button
+                      key={tab.id}
+                      variant={isActive ? "default" : "ghost"}
+                      className={cn(
+                        "rounded-full px-6 py-2 transition-all duration-200",
+                        isActive ? "shadow-sm" : "hover:bg-accent/50"
+                      )}
+                      onClick={() => navigate(`/dashboard/bundle/${bundleId}/${tab.path}`)}
+                    >
+                      <Icon className="w-4 h-4 mr-2" />
+                      <span className="hidden md:inline">{tab.label}</span>
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        </div>
 
-        <div className="w-full min-h-[calc(100vh-300px)] mt-20">
+        <div className="w-full min-h-[calc(100vh-300px)] pt-4">
           <Routes>
             <Route index element={<Navigate to="summary" replace />} />
             <Route path="summary" element={<DataSummary bundle={bundle} />} />
