@@ -48,28 +48,67 @@ export type Database = {
         Row: {
           columns_info: Json
           created_at: string
+          data_quality_stats: Json | null
+          data_source: string | null
+          descriptive_stats: Json | null
+          distribution_analysis: Json | null
+          feature_insights: Json | null
+          file_format: string | null
+          file_size: number | null
           id: string
+          integration_config: Json | null
+          last_updated_at: string | null
           name: string
+          privacy_compliance: Json | null
           raw_data: Json
+          relationship_metrics: Json | null
           summary_stats: Json
+          target_variable: string | null
+          time_series_insights: Json | null
           user_id: string
         }
         Insert: {
           columns_info: Json
           created_at?: string
+          data_quality_stats?: Json | null
+          data_source?: string | null
+          descriptive_stats?: Json | null
+          distribution_analysis?: Json | null
+          feature_insights?: Json | null
+          file_format?: string | null
+          file_size?: number | null
           id?: string
+          integration_config?: Json | null
+          last_updated_at?: string | null
           name: string
+          privacy_compliance?: Json | null
           raw_data: Json
+          relationship_metrics?: Json | null
           summary_stats: Json
+          target_variable?: string | null
+          time_series_insights?: Json | null
           user_id: string
         }
         Update: {
           columns_info?: Json
           created_at?: string
+          data_quality_stats?: Json | null
+          data_source?: string | null
+          descriptive_stats?: Json | null
+          distribution_analysis?: Json | null
+          feature_insights?: Json | null
+          file_format?: string | null
+          file_size?: number | null
           id?: string
+          integration_config?: Json | null
+          last_updated_at?: string | null
           name?: string
+          privacy_compliance?: Json | null
           raw_data?: Json
+          relationship_metrics?: Json | null
           summary_stats?: Json
+          target_variable?: string | null
+          time_series_insights?: Json | null
           user_id?: string
         }
         Relationships: []
