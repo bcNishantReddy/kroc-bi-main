@@ -30,7 +30,7 @@ const ChartAdvancedOptions = ({
   };
   return <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2 px-[11px] mx-[33px]">
+        <Button variant="outline" className="flex items-center gap-2 px-[11px] mx-[44px]">
           <Settings2 className="h-4 w-4" />
           Advanced Options
         </Button>
