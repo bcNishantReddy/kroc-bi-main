@@ -42,7 +42,7 @@ const Visualizations = ({
       link.click();
     }
   };
-  return <div className="h-full w-full p-4">
+  return <div className="h-full w-full p-4 px-0 py-0">
       <Card className="p-6 h-full px-[21px] py-[20px] mx-[240px]">
         <div className="flex flex-col h-full">
           <ChartControls chartType={chartType} setChartType={setChartType} xAxis={xAxis} setXAxis={setXAxis} yAxis={yAxis} setYAxis={setYAxis} groupBy={groupBy} setGroupBy={setGroupBy} columnNames={Object.keys(bundle.raw_data[0] || {})} />
