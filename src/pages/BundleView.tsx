@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Routes, Route, useParams, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +11,7 @@ import AIDataInsights from "@/components/bundle/AIDataInsights";
 import { ArrowLeft, Database, BarChart2, Brain, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Bundle } from "@/components/bundle/types/bundle";
+import { convertToBundle } from "@/components/bundle/types/bundle";
 
 const BundleView = () => {
   const { bundleId } = useParams();
@@ -30,11 +30,9 @@ const BundleView = () => {
           .single();
 
         if (error) throw error;
-        const parsedData = {
-          ...data,
-          raw_data: Array.isArray(data.raw_data) ? data.raw_data : []
-        };
-        setBundle(parsedData as Bundle);
+        
+        const convertedBundle = convertToBundle(data);
+        setBundle(convertedBundle);
       } catch (error) {
         console.error("Error loading bundle:", error);
         toast({
