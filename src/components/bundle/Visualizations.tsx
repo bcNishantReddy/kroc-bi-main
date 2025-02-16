@@ -47,7 +47,7 @@ const Visualizations = ({
         <div className="flex flex-col h-full">
           <ChartControls chartType={chartType} setChartType={setChartType} xAxis={xAxis} setXAxis={setXAxis} yAxis={yAxis} setYAxis={setYAxis} groupBy={groupBy} setGroupBy={setGroupBy} columnNames={Object.keys(bundle.raw_data[0] || {})} />
 
-          <div className="flex flex-wrap justify-end gap-2 mb-4">
+          <div className="flex flex-wrap justify-end gap-2 mb-4 px-[29px] py-[9px]">
             <Button variant="outline" onClick={downloadChart} className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Download
