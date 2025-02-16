@@ -131,7 +131,7 @@ const DataSummary = ({ bundle }: { bundle: Bundle }) => {
                       <h3 className="font-medium mb-2">{column}</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {Object.entries(stats as Record<string, any>).map(([stat, value]) => (
-                          <div key={stat}>
+                          <div key={stat} className="bg-accent/30 p-4 rounded-lg">
                             <p className="text-sm text-muted-foreground capitalize">{stat.replace(/_/g, ' ')}</p>
                             <p className="font-medium">{typeof value === 'number' ? value.toLocaleString() : value}</p>
                           </div>
@@ -150,15 +150,52 @@ const DataSummary = ({ bundle }: { bundle: Bundle }) => {
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">Time Series Analysis</h2>
               {bundle.time_series_insights && Object.keys(bundle.time_series_insights).length > 0 ? (
-                <div className="space-y-4">
-                  {Object.entries(bundle.time_series_insights).map(([metric, value]) => (
-                    <div key={metric} className="border-b pb-4 last:border-b-0">
-                      <h3 className="font-medium capitalize mb-2">{metric.replace(/_/g, ' ')}</h3>
-                      <p className="text-muted-foreground">
-                        {typeof value === 'object' ? JSON.stringify(value, null, 2) : value}
-                      </p>
+                <div className="space-y-6">
+                  {bundle.time_series_insights.seasonality && (
+                    <div className="border-b pb-4">
+                      <h3 className="font-medium mb-2">Seasonality</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-accent/30 p-4 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Seasonal Periods</p>
+                          <p className="font-medium">{bundle.time_series_insights.seasonality.seasonal_periods.join(', ')}</p>
+                        </div>
+                        <div className="bg-accent/30 p-4 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Seasonal Strength</p>
+                          <p className="font-medium">{bundle.time_series_insights.seasonality.seasonal_strength}</p>
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  )}
+                  {bundle.time_series_insights.trend && (
+                    <div className="border-b pb-4">
+                      <h3 className="font-medium mb-2">Trend Analysis</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-accent/30 p-4 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Direction</p>
+                          <p className="font-medium capitalize">{bundle.time_series_insights.trend.direction}</p>
+                        </div>
+                        <div className="bg-accent/30 p-4 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Strength</p>
+                          <p className="font-medium">{bundle.time_series_insights.trend.strength}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {bundle.time_series_insights.stationarity && (
+                    <div>
+                      <h3 className="font-medium mb-2">Stationarity</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-accent/30 p-4 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Is Stationary</p>
+                          <p className="font-medium">{bundle.time_series_insights.stationarity.is_stationary ? 'Yes' : 'No'}</p>
+                        </div>
+                        <div className="bg-accent/30 p-4 rounded-lg">
+                          <p className="text-sm text-muted-foreground">P-Value</p>
+                          <p className="font-medium">{bundle.time_series_insights.stationarity.p_value}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-muted-foreground">No time series insights available</p>
@@ -170,15 +207,61 @@ const DataSummary = ({ bundle }: { bundle: Bundle }) => {
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">Privacy Compliance</h2>
               {bundle.privacy_compliance && Object.keys(bundle.privacy_compliance).length > 0 ? (
-                <div className="space-y-4">
-                  {Object.entries(bundle.privacy_compliance).map(([check, status]) => (
-                    <div key={check} className="border-b pb-4 last:border-b-0">
-                      <h3 className="font-medium capitalize mb-2">{check.replace(/_/g, ' ')}</h3>
-                      <p className="text-muted-foreground">
-                        {typeof status === 'object' ? JSON.stringify(status, null, 2) : status}
-                      </p>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="bg-accent/30 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground">PII Detection Status</p>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${bundle.privacy_compliance.pii_detected ? 'bg-red-500' : 'bg-green-500'}`} />
+                        <p className="font-medium">{bundle.privacy_compliance.pii_detected ? 'PII Detected' : 'No PII Detected'}</p>
+                      </div>
                     </div>
-                  ))}
+                    <div className="bg-accent/30 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Encryption Status</p>
+                      <p className="font-medium capitalize">{bundle.privacy_compliance.encryption_status}</p>
+                    </div>
+                    {bundle.privacy_compliance.compliance_score !== undefined && (
+                      <div className="bg-accent/30 p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Compliance Score</p>
+                        <p className="font-medium">{bundle.privacy_compliance.compliance_score}%</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {bundle.privacy_compliance.pii_columns && bundle.privacy_compliance.pii_columns.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h3 className="font-medium mb-2">PII Columns Detected</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {bundle.privacy_compliance.pii_columns.map((column) => (
+                          <div key={column} className="bg-destructive/10 text-destructive px-3 py-1 rounded-full text-sm">
+                            {column}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {bundle.privacy_compliance.gdpr_status && (
+                    <div className="border-t pt-4">
+                      <h3 className="font-medium mb-2">GDPR Status</h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${bundle.privacy_compliance.gdpr_status.compliant ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <p className="font-medium">{bundle.privacy_compliance.gdpr_status.compliant ? 'GDPR Compliant' : 'Not GDPR Compliant'}</p>
+                        </div>
+                        {bundle.privacy_compliance.gdpr_status.issues.length > 0 && (
+                          <div className="bg-destructive/10 p-4 rounded-lg mt-2">
+                            <p className="text-sm font-medium text-destructive mb-2">Compliance Issues:</p>
+                            <ul className="list-disc list-inside text-sm text-destructive">
+                              {bundle.privacy_compliance.gdpr_status.issues.map((issue, index) => (
+                                <li key={index}>{issue}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-muted-foreground">No privacy compliance data available</p>
@@ -190,15 +273,64 @@ const DataSummary = ({ bundle }: { bundle: Bundle }) => {
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">Integration Settings</h2>
               {bundle.integration_config && Object.keys(bundle.integration_config).length > 0 ? (
-                <div className="space-y-4">
-                  {Object.entries(bundle.integration_config).map(([integration, config]) => (
-                    <div key={integration} className="border-b pb-4 last:border-b-0">
-                      <h3 className="font-medium capitalize mb-2">{integration.replace(/_/g, ' ')}</h3>
-                      <p className="text-muted-foreground">
-                        {typeof config === 'object' ? JSON.stringify(config, null, 2) : config}
-                      </p>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="bg-accent/30 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground">API Status</p>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${bundle.integration_config.api_enabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <p className="font-medium">{bundle.integration_config.api_enabled ? 'Enabled' : 'Disabled'}</p>
+                      </div>
                     </div>
-                  ))}
+                    
+                    <div className="bg-accent/30 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Export Formats</p>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {bundle.integration_config.export_formats.map((format) => (
+                          <span key={format} className="bg-primary/10 px-2 py-1 rounded-full text-xs">
+                            {format.toUpperCase()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {bundle.integration_config.scheduled_updates && (
+                      <div className="bg-accent/30 p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Update Frequency</p>
+                        <p className="font-medium">{bundle.integration_config.scheduled_updates.frequency}</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {bundle.integration_config.connected_services && bundle.integration_config.connected_services.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h3 className="font-medium mb-2">Connected Services</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {bundle.integration_config.connected_services.map((service) => (
+                          <div key={service} className="flex items-center gap-2 bg-accent/30 p-3 rounded-lg">
+                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <span className="font-medium">{service}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {bundle.integration_config.scheduled_updates && (
+                    <div className="border-t pt-4">
+                      <h3 className="font-medium mb-2">Update Schedule</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-accent/30 p-4 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Last Update</p>
+                          <p className="font-medium">{formatDate(bundle.integration_config.scheduled_updates.last_update)}</p>
+                        </div>
+                        <div className="bg-accent/30 p-4 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Next Update</p>
+                          <p className="font-medium">{formatDate(bundle.integration_config.scheduled_updates.next_update)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-muted-foreground">No integration settings available</p>
